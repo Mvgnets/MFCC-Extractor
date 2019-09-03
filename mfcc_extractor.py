@@ -18,44 +18,38 @@ import librosa.display
 #import garbage collector to prevent memory leak
 import gc
 
-from google.colab import drive
-drive.mount('/content/drive')
-
+#set the path to your audio dataset
 import pathlib
-#data_root = pathlib.Path('/content/drive/My Drive/Audio')
-#data_root = pathlib.Path(r'\Users\EchoY\OneDrive\Desktop\Project Data\train\audio')
-#for item in data_root.iterdir():
-#  print(item)
-image_root = pathlib.Path(r'\Users\EchoY\OneDrive\Desktop\Project Data\train\images2')
-for item in image_root.iterdir():
+data_root = pathlib.Path(r'##PATH TO YOUR RAW AUDIO##\audio')
+for item in data_root.iterdir():
   print(item)
   
 import random
-#all_audio_paths = list(data_root.glob('*/*'))
-all_image_paths = list(image_root.glob('*/*'))
-#all_audio_paths = [str(path) for path in all_audio_paths]
+all_audio_paths = list(data_root.glob('*/*'))
+all_audio_paths = [str(path) for path in all_audio_paths]
 random.shuffle(all_audio_paths)
 
-#file_count = len(all_audio_paths)
-file_count = len(all_image_paths)
-file_count
+file_count = len(all_audio_paths)
 
 label_names = sorted(item.name for item in data_root.glob('*/') if item.is_dir())
 label_names
 
+# Iterate through each file, convert it to an MFCC image and save it to the apropriate folder. This version of the code requires you to create the empty folders manually first
 counter = 0
 fig = plt.figure(figsize=(10, 10))
 for item in all_audio_paths:
   name = str(item.name).split('.')
   name = name[0] + '.png'
   parent = str(item.parent).split("audio")
-  path = r'\Users\EchoY\OneDrive\Desktop\Project Data\train\images' + '\\' + parent[1][1:] + '\\' + name
+  path = r'##PATH TO THE IMGE OUTPUT DESTINATION##\images' + '\\' + parent[1][1:] + '\\' + name
   print(path)
   print(pathlib.Path(path).exists())
   counter = counter + 1
   output = str(counter) + "/" + str(file_count)
   print(output)
   y, sr = librosa.load(item)
+  
+  # Generate a mel spectrogram for the audio file
   S = librosa.feature.melspectrogram(y, sr=sr, n_mels=128)
 
   # Convert to log scale (dB). We'll use the peak power (max) as reference.
@@ -63,8 +57,6 @@ for item in all_audio_paths:
 
   # Next, we'll extract the top 13 Mel-frequency cepstral coefficients (MFCCs)
   mfcc = librosa.feature.mfcc(S=log_S, n_mfcc=13)
-
-  # How do they look?  We'll show each in its own subplot
 
   librosa.display.specshow(mfcc)
   plt.gca().set_axis_off()
